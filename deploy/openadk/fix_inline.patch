@@ -1,0 +1,28 @@
+--- gcc-4.2.4.orig/gcc/cp/cfns.h	2006-06-06 13:44:09.000000000 +0200
++++ gcc-4.2.4/gcc/cp/cfns.h	2024-03-04 13:15:18.686484511 +0100
+@@ -35,8 +35,12 @@
+ #endif
+ static unsigned int hash (const char *, unsigned int);
+ #ifdef __GNUC__
++#ifdef __GNUC_STDC_INLINE__
++__attribute__ ((__gnu_inline__))
++#else
+ __inline
+ #endif
++#endif
+ const char * libc_name_p (const char *, unsigned int);
+ /* maximum key range = 391, duplicates = 0 */
+
+@@ -106,8 +110,12 @@
+ }
+
+ #ifdef __GNUC__
++#ifdef __GNUC_STDC_INLINE__
++__attribute__ ((__gnu_inline__))
++#else
+ __inline
+ #endif
++#endif
+ const char *
+ libc_name_p (register const char *str, register unsigned int len)
+ {

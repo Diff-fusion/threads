@@ -1,0 +1,73 @@
+diff --git a/mk/image.mk b/mk/image.mk
+index 9989994b9..ac0179c06 100644
+--- a/mk/image.mk
++++ b/mk/image.mk
+@@ -62,7 +62,7 @@ ifneq (,$(strip ${extra}))
+ endif
+
+ image-prepare-post:
+-	$(BASH) $(ADK_TOPDIR)/scripts/update-rcconf
++	$(BASH) $(ADK_TOPDIR)/scripts/update-rcconf ${BASE_DIR}
+ 	rng=/dev/arandom; test -e $$rng || rng=/dev/urandom; \
+ 	    dd if=$$rng bs=512 count=1 >>${TARGET_DIR}/etc/.rnd 2>/dev/null; \
+ 	    chmod 600 ${TARGET_DIR}/etc/.rnd
+diff --git a/mk/vars.mk b/mk/vars.mk
+index 86079d09a..bb2682495 100644
+--- a/mk/vars.mk
++++ b/mk/vars.mk
+@@ -36,13 +36,13 @@ ADK_SUFFIX:=		$(ADK_SUFFIX)_nommu
+ endif
+
+ # some global dirs
+-BASE_DIR:=		$(ADK_TOPDIR)
++BASE_DIR:=		$(ADK_TOPDIR)/build/
+ ifeq ($(ADK_DL_DIR),)
+ DL_DIR?=		$(BASE_DIR)/dl
+ else
+ DL_DIR?=		$(ADK_DL_DIR)
+ endif
+-SCRIPT_DIR:=		$(BASE_DIR)/scripts
++SCRIPT_DIR:=		$(ADK_TOPDIR)/scripts
+ STAGING_HOST_DIR:=	${BASE_DIR}/host_${GNU_HOST_NAME}
+ HOST_BUILD_DIR:=	${BASE_DIR}/host_build_${GNU_HOST_NAME}
+ TOOLCHAIN_DIR:=		${BASE_DIR}/toolchain_${ADK_SUFFIX}
+diff --git a/package/busybox/files/busybox.postinst b/package/busybox/files/busybox.postinst
+index 8436e76f5..3e691e88e 100644
+--- a/package/busybox/files/busybox.postinst
++++ b/package/busybox/files/busybox.postinst
+@@ -1,6 +1,6 @@
+ #!/bin/sh
+ . $IPKG_INSTROOT/etc/functions.sh
+-add_rcconf network YES
++add_rcconf network NO
+ add_rcconf crond NO
+ add_rcconf watchdog NO
+ add_rcconf watchdog_flags '-t 10 -T 20'
+diff --git a/scripts/update-rcconf b/scripts/update-rcconf
+index 7dc272e73..1b73c6da8 100755
+--- a/scripts/update-rcconf
++++ b/scripts/update-rcconf
+@@ -3,11 +3,12 @@
+ # material, please see the LICENCE file in the top-level directory.
+
+ topdir=$(readlink -nf $(dirname $0)/.. 2>/dev/null || (cd $(dirname $0)/..; pwd -P))
++basedir="$1"
+ host=$(gcc -dumpmachine)
+
+ case :$PATH: in
+-(*:$topdir/host_$host/usr/bin:*) ;;
+-(*) export PATH=$topdir/host_$host/usr/bin:$PATH ;;
++(*:$basedir/host_$host/usr/bin:*) ;;
++(*) export PATH=$basedir/host_$host/usr/bin:$PATH ;;
+ esac
+ . $topdir/.config
+
+@@ -37,7 +38,7 @@ if [ -z ${ADK_TARGET_WITH_MMU} ];then
+ 	suffix=${suffix}_nommu
+ fi
+
+-rcconf=$(ls $topdir/root_${suffix}/etc/rc.conf)
++rcconf=$(ls $basedir/root_${suffix}/etc/rc.conf)
+
+ if [ ! -f $rcconf ];then
+ 	exit 0

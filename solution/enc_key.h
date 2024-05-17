@@ -1,0 +1,1 @@
+../deploy/openadk/threads/src/enc_key.h

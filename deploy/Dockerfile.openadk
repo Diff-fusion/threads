@@ -1,0 +1,43 @@
+# build kenerl image with
+# docker build --output=../public -f Dockerfile.openadk .
+FROM debian:bookworm as builder
+
+RUN --mount=type=cache,target=/var/cache/apt \
+    apt-get update && \
+    DOCKER_FRONTEND=noninteractive apt-get install -y \
+    build-essential \
+    bison \
+    cpio \
+    curl \
+    file \
+    flex \
+    gawk \
+    git \
+    libz-dev \
+    ncurses-dev \
+    pkg-config \
+    python3 \
+    wget \
+    zip
+
+RUN mkdir /build && \
+    cd /build && \
+    git clone git://openadk.org/git/openadk && \
+    git -C openadk checkout 7a1ed5a1a42f98f3015112af653f3a2dbfb3f819
+
+WORKDIR /build
+ADD openadk/external_build_dir.patch /build
+ADD openadk/config /build/openadk/.config
+ADD openadk/fix_inline.patch /build/openadk/toolchain/gcc/patches/4.2.4/
+ADD openadk/threads/ /build/openadk/package/threads/
+
+RUN --mount=type=cache,target=/build/openadk/build \
+    --mount=type=cache,target=/root/.ccache \
+    cd openadk && \
+    git apply ../external_build_dir.patch && \
+    make package=threads clean && \
+    make && \
+    cp build/firmware/qemu-metag_uclibc-ng/qemu-metag-initramfspiggyback-kernel ../kernel
+
+FROM scratch as binary
+COPY --from=builder /build/kernel /

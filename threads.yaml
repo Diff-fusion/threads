@@ -1,0 +1,18 @@
+name: "threads"
+enabled: true
+displayName: "Threads"
+categories:
+ - "Reverse Engineering"
+difficulty: "Hard"
+authors:
+ - "Diff-fusion"
+ - "hlt"
+tags: []
+description: |-
+  A friend told me to install `threads` from META. But I got something messed up and it was a ransomware.
+  Now all my data is encrypted. Can you help me recover it?
+
+  In the attachments is a copy of my computer with this `threads` malware. It also contains a VM so you don't have to get your own META.
+
+points: 100
+flag: "CSCG{wh0_n3ed5_THUMB_1f_y0u_got_MiniM}"
